@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Indução Eletromagnética</title>
+  <meta name="description"
+    content="Simulador interativo de indução eletromagnética – espiras, bobinas, fluxo magnético e Lei de Faraday para o 11.º ano de Física." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-logo">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="18" cy="18" rx="16" ry="8" stroke="#7c6ff7" stroke-width="2" fill="none" />
+          <ellipse cx="18" cy="18" rx="16" ry="8" stroke="#7c6ff7" stroke-width="2" fill="none"
+            transform="rotate(60 18 18)" opacity="0.6" />
+          <ellipse cx="18" cy="18" rx="16" ry="8" stroke="#7c6ff7" stroke-width="2" fill="none"
+            transform="rotate(120 18 18)" opacity="0.3" />
+          <circle cx="18" cy="18" r="3" fill="#a78bfa" />
+        </svg>
+        <span class="header-title">Indução Eletromagnética</span>
+      </div>
+      <div class="header-subtitle">Simulador Interativo · Física 11.º Ano</div>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="app-main">
+    <!-- LEFT: Simulation Canvas Area -->
+    <section class="sim-panel" aria-label="Área de simulação">
+      <!-- Field Type + Mode selectors -->
+      <div class="sim-topbar">
+        <div class="control-group">
+          <label class="ctrl-label" for="sel-field">Tipo de Campo</label>
+          <div class="select-wrapper">
+            <select id="sel-field" class="ctrl-select">
+              <option value="uniform">Campo Uniforme</option>
+              <option value="magnet">Íman em Barra</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="sel-coil">Elemento Magnético</label>
+          <div class="select-wrapper">
+            <select id="sel-coil" class="ctrl-select">
+              <option value="espira">Espira (1 volta)</option>
+              <option value="bobina">Bobina (N voltas)</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-group" id="n-turns-group" style="display:none">
+          <label class="ctrl-label" for="sl-turns">Número de espiras N = <span id="lbl-turns">5</span></label>
+          <input id="sl-turns" type="range" class="ctrl-slider" min="1" max="20" value="5" />
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="canvas-wrapper">
+        <canvas id="simCanvas" width="720" height="480"></canvas>
+
+        <!-- Legend overlay -->
+        <div class="canvas-legend">
+          <div class="legend-item"><span class="legend-color" style="background:#60a5fa"></span> Campo
+            <strong>B</strong>
+          </div>
+          <div class="legend-item"><span class="legend-color" style="background:#f472b6"></span> Normal
+            <strong>n̂</strong>
+          </div>
+          <div class="legend-item"><span class="legend-color" style="background:#34d399"></span> Corrente induzida
+            <strong>I</strong>
+          </div>
+          <div class="legend-item"><span class="legend-color" style="background:#fbbf24"></span> Fluxo
+            <strong>Φ</strong>
+          </div>
+        </div>
+
+        <!-- Magnet drag hint -->
+        <div id="magnet-hint" class="canvas-hint" style="display:none">⇄ Arrasta o íman horizontalmente</div>
+      </div>
+
+      <!-- Rotation controls -->
+      <div class="rotation-panel">
+        <div class="rotation-left">
+          <div class="angle-display">
+            <div class="angle-value" id="lbl-angle">0°</div>
+            <div class="angle-sublabel">α (B̂ · n̂)</div>
+          </div>
+          <input id="sl-angle" type="range" class="ctrl-slider angle-slider" min="0" max="360" value="0" />
+          <div class="slider-labels"><span>0°</span><span>90°</span><span>180°</span><span>270°</span><span>360°</span>
+          </div>
+        </div>
+        <div class="rotation-right">
+          <button id="btn-play" class="btn-icon btn-play" title="Animar rotação">
+            <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="display:none">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+          <div class="control-group">
+            <label class="ctrl-label" for="sl-speed">Velocidade ω = <span id="lbl-speed">1.0</span> rad/s</label>
+            <input id="sl-speed" type="range" class="ctrl-slider" min="0.1" max="5" step="0.1" value="1" />
+          </div>
+          <button id="btn-reset" class="btn-secondary" title="Reiniciar">↺ Reiniciar</button>
+        </div>
+      </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT: Physics Info + Graph -->
+    <aside class="info-panel" aria-label="Painel de física e gráfico">
+
+      <!-- Physics readout -->
+      <div class="physics-card">
+        <h2 class="card-title">⚡ Grandezas Físicas</h2>
+        <div class="physics-grid">
+          <div class="phys-row">
+            <div class="phys-label">Intensidade do campo</div>
+            <div class="phys-controls">
+              <input id="sl-B" type="range" class="ctrl-slider mini-slider" min="0.1" max="5" step="0.1" value="1" />
+              <span class="phys-value mono" id="lbl-B">1.0 T</span>
+            </div>
+          </div>
+          <div class="phys-row">
+            <div class="phys-label">Área da espira</div>
+            <div class="phys-controls">
+              <input id="sl-A" type="range" class="ctrl-slider mini-slider" min="0.01" max="1" step="0.01"
+                value="0.1" />
+              <span class="phys-value mono" id="lbl-A">0.10 m²</span>
+            </div>
+          </div>
+
+          <div class="phys-divider"></div>
+
+          <div class="phys-row highlight-row">
+            <div class="phys-label-big">Fluxo magnético <em>Φ</em></div>
+            <div class="phys-value-big mono" id="lbl-flux">0.100 Wb</div>
+          </div>
+          <div class="phys-sub mono" id="formula-flux">Φ = B·A·cos α = 1.0 × 0.10 × cos(0°) = 0.100 Wb</div>
+
+          <div class="phys-row highlight-row emf-row">
+            <div class="phys-label-big">Força eletromotriz <em>|ε|</em></div>
+            <div class="phys-value-big mono emf-value" id="lbl-emf">0.000 V</div>
+          </div>
+          <div class="phys-sub mono" id="formula-emf">|ε| = N · |ΔΦ/Δt| = 0.000 V</div>
+
+          <div class="phys-row" style="margin-top:8px">
+            <div class="phys-label-big">Corrente induzida</div>
+            <div class="phys-value-big" id="lbl-current" style="font-size:1rem">—</div>
+          </div>
+        </div>
+
+        <!-- Formula reference -->
+        <div class="formula-box">
+          <div class="formula-line">Φ<sub>m</sub> = B · A · cos α</div>
+          <div class="formula-line">Φ<sub>bobina</sub> = N · Φ<sub>espira</sub></div>
+          <div class="formula-line">|ε| = N · |ΔΦ/Δt|</div>
+        </div>
+      </div>
+
+      <!-- Graph -->
+      <div class="graph-card">
+        <div class="graph-header">
+          <h2 class="card-title">📈 Gráfico Φ(t) e ε(t)</h2>
+          <div class="graph-legend">
+            <span class="gl-dot" style="background:#fbbf24"></span><span>Φ (Wb)</span>
+            <span class="gl-dot" style="background:#f87171"></span><span>ε (V)</span>
+          </div>
+          <button id="btn-clear-graph" class="btn-secondary btn-xs">Limpar</button>
+        </div>
+        <canvas id="graphCanvas" width="420" height="220"></canvas>
+        <div class="graph-xlabel">Tempo (s)</div>
+        <div class="graph-info mono" id="graph-info">Pressiona ▶ ou move o slider para gerar dados</div>
+      </div>
+
+      <!-- Faraday Theory Card -->
+      <div class="theory-card">
+        <h2 class="card-title">📖 Lei de Faraday</h2>
+        <p>A variação do fluxo magnético numa espira gera uma <strong>força eletromotriz induzida</strong>. A corrente
+          induzida opõe-se à variação do fluxo (<strong>Lei de Lenz</strong>).</p>
+        <ul>
+          <li>α = 0° → Φ máximo, ε ≈ 0</li>
+          <li>α = 90° → Φ nulo, ε máximo</li>
+          <li>ε maior quando ω maior (rotação mais rápida)</li>
+          <li>ε maior quando N maior (mais espiras)</li>
+        </ul>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Floating Chatbot UI -->
+  <div class="chatbot-container" id="chatbot-container" style="display:none">
+    <div class="chat-header">
+      <div class="chat-title">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        Assistente de Física
+      </div>
+      <button class="chat-close" id="btn-chat-close">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot-msg">Olá! Sou o Assistente de Física. Tens dúvidas sobre o que está a acontecer na
+        simulação ou sobre a Lei de Faraday? Pergunta-me!</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" class="chat-input" placeholder="Escreve a tua pergunta..." />
+      <button id="btn-chat-send" class="btn-chat-send">▶</button>
+    </div>
+  </div>
+
+  <button class="chat-fab" id="btn-chat-open" title="Faz uma pergunta">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+
+  <script src="js/simulation.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+
+</html>
