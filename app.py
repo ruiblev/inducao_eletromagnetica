@@ -12,6 +12,25 @@ st.set_page_config(
 # Título e descrição (opcional, já que o HTML tem o seu próprio header)
 # st.title("🔬 Simulador de Indução Eletromagnética")
 
+# CSS Global para remover padding, margens e barras originais do Streamlit
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 0rem !important;
+            padding-bottom: 0rem !important;
+            padding-left: 0rem !important;
+            padding-right: 0rem !important;
+            max-width: 100% !important;
+        }
+        header {visibility: hidden !important;}
+        footer {visibility: hidden !important;}
+        #MainMenu {visibility: hidden !important;}
+        iframe {
+            border: none !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 def load_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         return f.read()
@@ -45,9 +64,5 @@ html_integrated = re.sub(r'<script src="js/.*?"></script>', '', html_integrated)
 # Adicionar o conteúdo dos scripts no final do body
 html_integrated = html_integrated.replace('</body>', f'{scripts_content}</body>')
 
-# Renderizar a aplicação
-components.html(html_integrated, height=900, scrolling=True)
-
-# Rodapé informativo
-st.markdown("---")
-st.caption("Desenvolvido para o currículo de Física 11.º ano. Versão Streamlit.")
+# Renderizar a aplicação com altura generosa e sem scrollbars duplos
+components.html(html_integrated, height=1000, scrolling=False)
