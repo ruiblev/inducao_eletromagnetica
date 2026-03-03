@@ -5,12 +5,24 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "package": "electron-packager . inducao_eletromagnetica --platform=darwin --arch=x64 --out=dist/"
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.ruicampos.inducao",
+    "productName": "InducaoEletromagnetica",
+    "mac": {
+      "category": "public.app-category.education",
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    }
   },
   "author": "Rui Campos",
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.2.0",
-    "electron-packager": "^17.1.2"
+    "electron-builder": "^26.8.1"
   }
 }
