@@ -1,0 +1,16 @@
+{
+  "name": "inducao_eletromagnetica",
+  "version": "1.0.0",
+  "description": "Simulador interativo de Indução Eletromagnética para Física de 11.º ano.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-packager . inducao_eletromagnetica --platform=darwin --arch=x64 --out=dist/"
+  },
+  "author": "Rui Campos",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-packager": "^17.1.2"
+  }
+}
